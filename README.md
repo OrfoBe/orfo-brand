@@ -11,16 +11,19 @@ signatures email, via le CDN jsDelivr).
 
 | Fichier | Marque |
 | --- | --- |
-| `orfo-logo-signature.png` | ORFO (générique) |
-| `orfo-studio-logo-signature.png` | ORFO Studio |
+| `orfo-logo.png` | ORFO (générique) |
+| `orfo-studio-logo.png` | ORFO Studio |
+
+Noms volontairement génériques (pas de suffixe `-signature`) : ces logos peuvent
+servir à autre chose que les signatures email.
 
 ## URL publique (jsDelivr)
 
 Les logos sont servis via jsDelivr, un CDN gratuit adossé à GitHub :
 
 ```
-https://cdn.jsdelivr.net/gh/OrfoBe/orfo-brand@main/orfo-logo-signature.png
-https://cdn.jsdelivr.net/gh/OrfoBe/orfo-brand@main/orfo-studio-logo-signature.png
+https://cdn.jsdelivr.net/gh/OrfoBe/orfo-brand@main/orfo-logo.png
+https://cdn.jsdelivr.net/gh/OrfoBe/orfo-brand@main/orfo-studio-logo.png
 ```
 
 - `@main` sert toujours la dernière version (cache CDN ~7 j).
