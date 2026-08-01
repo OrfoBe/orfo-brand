@@ -9,13 +9,27 @@ signatures email, via le CDN jsDelivr).
 
 ## Logos disponibles
 
-| Fichier | Marque |
-| --- | --- |
-| `orfo-logo.png` | ORFO (générique) |
-| `orfo-studio-logo.png` | ORFO Studio |
+| Fichier | Marque | Fond | Usage |
+| --- | --- | --- | --- |
+| `orfo-logo.png` | ORFO (générique) | noir | signatures email (fond clair) |
+| `orfo-studio-logo.png` | ORFO Studio | noir | signatures email (fond clair) |
+| `orfo-labs-logo.png` | ORFO Labs | noir | signatures email (fond clair) |
+| `orfo-studio-blanc.png` | ORFO Studio | transparent (glyphes blancs) | configurateur de plans (bandeau sombre) |
 
 Noms volontairement génériques (pas de suffixe `-signature`) : ces logos peuvent
 servir à autre chose que les signatures email.
+
+⚠️ `orfo-studio-blanc.png` est **blanc sur transparent** : lisible uniquement sur
+fond sombre. Pour un fond clair, utiliser `orfo-studio-logo.png`.
+
+## Exports complets de la charte (`exports/`)
+
+Le dossier [`exports/`](exports/) contient le jeu complet des exports de logos
+fournis par le design (toutes marques ORFO / Studio / Labs / LEDS / Store, plus
+l'icône), dans leurs déclinaisons couleur × fond, sous leurs noms d'origine
+(codes `A1`, `B1`, `C2`… de la charte). Source de référence pour piocher une
+variante ; les fichiers à la racine ci-dessus sont ceux réellement servis en
+production.
 
 ## URL publique (jsDelivr)
 
