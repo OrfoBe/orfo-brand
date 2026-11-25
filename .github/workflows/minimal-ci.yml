@@ -1,7 +1,7 @@
 # A copy of OrfoBe/orfo's .github/workflows/minimal-ci.yml at 871d60464546, identical below this
 # header: a public repository cannot call a private one's reusable workflow. orfo's CI fails when
 # the two differ (tools/check_brand_copy.sh there). A change opens its orfo pull request first; this
-# copy is taken from that pull request's commit and merged before it (orfo's docs/conventions.md).
+# copy is taken from that pull request's commit and merged before it (orfo's tools/check_brand_copy.sh).
 # ---
 # Guard file: it changes only with Hugo's review.
 #
