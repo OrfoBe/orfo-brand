@@ -1,0 +1,179 @@
+# A copy of OrfoBe/orfo's .github/workflows/minimal-ci.yml at 871d60464546, identical below this
+# header: a public repository cannot call a private one's reusable workflow. orfo's CI fails when
+# the two differ (tools/check_brand_copy.sh there). A change opens its orfo pull request first; this
+# copy is taken from that pull request's commit and merged before it (orfo's tools/check_brand_copy.sh).
+# ---
+# Guard file: it changes only with Hugo's review.
+#
+# ORFO's minimal CI, written once and called by every repository (docs/conventions.md):
+# gitleaks, the entry file's cap, no archive folder, links, workflows, lint and tests. One job,
+# so one required check (`<caller job> / check`) and one billed minute. A caller passes its own
+# commands:
+#
+#   jobs:
+#     ci:
+#       uses: OrfoBe/orfo/.github/workflows/minimal-ci.yml@main
+#       with:
+#         setup: node
+#         lint: pnpm lint
+#         test: pnpm test
+name: minimal-ci
+
+on:
+  workflow_call:
+    inputs:
+      setup:
+        description: "What lint and tests need: '' (nothing); node (pnpm from package.json's packageManager, Node from .nvmrc, then pnpm install); uv (uv sync --locked: run commands with uv run); python (3.12)"
+        type: string
+        default: ""
+      lint:
+        description: The repository's lint command, run with bash -e -o pipefail
+        type: string
+        default: ""
+      test:
+        description: The repository's test command, run with bash -e -o pipefail
+        type: string
+        default: ""
+      docs-only:
+        description: "Regex of paths: a pull request that changes only these runs neither setup, lint nor tests"
+        type: string
+        default: ""
+      entry-cap:
+        description: Word cap of AGENTS.md; 0 skips the check
+        type: number
+        default: 1000
+      links:
+        description: Check the relative links and anchors of every Markdown file
+        type: boolean
+        default: true
+      links-exclude:
+        description: Paths lychee skips, one regex per line
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      GITLEAKS_VERSION: 8.30.1
+      GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+      LYCHEE_VERSION: 0.24.2
+      LYCHEE_SHA256: 1f4e0ef7f6554a6ed33dd7ac144fb2e1bbed98598e7af973042fc5cd43951c9a
+      ACTIONLINT_VERSION: 1.7.12
+      ACTIONLINT_SHA256: 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      # Binaries checked against their hash: gitleaks-action asks organizations for a licence key.
+      - name: Install the checkers
+        run: |
+          fetch() { # url, sha256, binary
+            local pkg="$RUNNER_TEMP/pkg.tar.gz"
+            curl -fsSL -o "$pkg" "$1"
+            echo "$2  $pkg" | sha256sum --check --quiet
+            mkdir -p "$RUNNER_TEMP/pkg"
+            tar -xzf "$pkg" -C "$RUNNER_TEMP/pkg"
+            find "$RUNNER_TEMP/pkg" -type f -name "$3" -exec mv {} "$RUNNER_TEMP/" \;
+            rm -rf "$pkg" "$RUNNER_TEMP/pkg"
+            test -x "$RUNNER_TEMP/$3"
+          }
+          fetch "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" "$GITLEAKS_SHA256" gitleaks
+          fetch "https://github.com/lycheeverse/lychee/releases/download/lychee-v${LYCHEE_VERSION}/lychee-x86_64-unknown-linux-gnu.tar.gz" "$LYCHEE_SHA256" lychee
+          fetch "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz" "$ACTIONLINT_SHA256" actionlint
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
+
+      # The history of the commit under test, not of every fetched branch.
+      - name: No secret
+        run: gitleaks git --redact --verbose --log-opts=HEAD .
+
+      - name: Entry file's cap
+        if: inputs.entry-cap > 0
+        env:
+          CAP: ${{ inputs.entry-cap }}
+        run: |
+          test -f AGENTS.md || { echo "::error file=AGENTS.md::missing: every repository has an AGENTS.md"; exit 1; }
+          words=$(wc -w < AGENTS.md)
+          echo "AGENTS.md: $words words, cap $CAP"
+          if [ "$words" -gt "$CAP" ]; then echo "::error file=AGENTS.md::$words words, cap $CAP"; exit 1; fi
+
+      # Replace, never append (docs/conventions.md): Git keeps what is deleted. The same check as
+      # check_no_archive in orfo's tools/check_docs.py, on the tracked folders: every tracked path,
+      # unquoted (-z), a submodule as a folder of its own.
+      - name: No archive folder
+        run: |
+          found=$(git ls-files -z --stage | tr '\0' '\n' \
+            | awk '{ i = index($0, "\t"); p = substr($0, i + 1); if ($1 == "160000") p = p "/"; print p }' \
+            | grep -ioE '^(.*/)?archives?/' | sort -u || true)
+          if [ -n "$found" ]; then
+            while IFS= read -r dir; do
+              file=${dir//%/%25}; file=${file//:/%3A}; file=${file//,/%2C}
+              echo "::error file=${file}::archive folder: delete instead, Git keeps it"
+            done <<< "$found"
+            exit 1
+          fi
+
+      - name: Links
+        if: inputs.links
+        env:
+          EXCLUDE: ${{ inputs.links-exclude }}
+        run: |
+          args=(--offline --include-fragments --hidden --no-progress --exclude-path '/node_modules/' --exclude-path '/\.git/')
+          while IFS= read -r path; do [ -n "$path" ] && args+=(--exclude-path "$path"); done <<< "$EXCLUDE"
+          lychee "${args[@]}" --extensions md --root-dir "$PWD" .
+
+      - name: Workflows
+        run: |
+          if [ -d .github/workflows ]; then actionlint; fi
+
+      - name: What changed
+        id: changed
+        env:
+          DOCS_ONLY: ${{ inputs.docs-only }}
+          BASE: ${{ github.base_ref }}
+          SETUP: ${{ inputs.setup }}
+        run: |
+          case "$SETUP" in "" | node | uv | python) ;; *) echo "::error::unknown setup: $SETUP"; exit 1 ;; esac
+          run=true
+          if [ -n "$DOCS_ONLY" ] && [ -n "$BASE" ]; then
+            changed=$(git diff --no-renames --name-only "origin/${BASE}...HEAD")
+            if ! grep -qvE "$DOCS_ONLY" <<< "$changed"; then run=false; fi
+          fi
+          echo "run=$run" >> "$GITHUB_OUTPUT"
+
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+        if: steps.changed.outputs.run == 'true' && inputs.setup == 'node'
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        if: steps.changed.outputs.run == 'true' && inputs.setup == 'node'
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
+        if: steps.changed.outputs.run == 'true' && inputs.setup == 'uv'
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        if: steps.changed.outputs.run == 'true' && inputs.setup == 'python'
+        with:
+          python-version: "3.12"
+      - name: Install
+        if: steps.changed.outputs.run == 'true' && (inputs.setup == 'node' || inputs.setup == 'uv')
+        env:
+          SETUP: ${{ inputs.setup }}
+        run: |
+          if [ "$SETUP" = node ]; then pnpm install --frozen-lockfile; else uv sync --locked; fi
+
+      - name: Lint
+        if: steps.changed.outputs.run == 'true' && inputs.lint != ''
+        env:
+          COMMAND: ${{ inputs.lint }}
+        run: bash -e -o pipefail -c "$COMMAND"
+
+      - name: Tests
+        if: steps.changed.outputs.run == 'true' && inputs.test != ''
+        env:
+          COMMAND: ${{ inputs.test }}
+        run: bash -e -o pipefail -c "$COMMAND"
