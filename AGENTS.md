@@ -8,7 +8,7 @@ Shared rules: ORFO's [conventions](https://github.com/OrfoBe/orfo/blob/main/docs
 | --- | --- |
 | `*.png` at the root | The files pages load; the [README](README.md) says which brand, background and use each has |
 | `exports/` | The charter's full set of logo masters, under their design names: a source no live page loads |
-| `.github/workflows/minimal-ci.yml` | ORFO's shared CI, copied from `orfo`: a public repository cannot call a private one's workflow. `orfo`'s CI fails while the copy differs. A change opens its `orfo` pull request first; the copy is taken from that pull request's commit and merged here before it, as orfo's `tools/check_brand_copy.sh` says |
+| `.github/workflows/minimal-ci.yml` | ORFO's shared CI, copied from `orfo`: a public repository cannot call a private one's workflow. `orfo`'s CI fails while the copy differs. A change opens its `orfo` pull request first; the copy takes that pull request's file and its blob hash, and is merged here before it, as orfo's `tools/check_brand_copy.sh` says |
 
 They are loaded by name at `@main`:
 

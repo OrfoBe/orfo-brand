@@ -1,7 +1,8 @@
-# A copy of OrfoBe/orfo's .github/workflows/minimal-ci.yml at 871d60464546, identical below this
-# header: a public repository cannot call a private one's reusable workflow. orfo's CI fails when
-# the two differ (tools/check_brand_copy.sh there). A change opens its orfo pull request first; this
-# copy is taken from that pull request's commit and merged before it (orfo's tools/check_brand_copy.sh).
+# A copy of OrfoBe/orfo's .github/workflows/minimal-ci.yml, blob e9b464ea86945971fa0183719a3b6fc4d9dea0e1
+# (git hash-object), identical below this header: a public repository cannot call a private one's
+# reusable workflow. orfo's CI fails when the two differ (tools/check_brand_copy.sh there). A change
+# opens its orfo pull request first; this copy takes that pull request's file and its blob hash and
+# is merged before it (orfo's tools/check_brand_copy.sh).
 # ---
 # Guard file: it changes only with Hugo's review.
 #
