@@ -1,6 +1,7 @@
 # Guard file: it changes only with Hugo's review.
-# ORFO's minimal CI, written once in OrfoBe/orfo (docs/conventions.md): gitleaks, AGENTS.md's cap,
-# no archive folder, links and workflows. The repository holds pictures: no lint, no tests.
+# ORFO's minimal CI (OrfoBe/orfo, docs/conventions.md): gitleaks, AGENTS.md's cap, no archive
+# folder, links and workflows. The repository holds pictures: no lint, no tests. It is public, so it
+# runs its copy of the shared workflow, which orfo's CI keeps identical.
 name: ci
 
 on:
@@ -13,4 +14,4 @@ permissions:
 
 jobs:
   ci:
-    uses: OrfoBe/orfo/.github/workflows/minimal-ci.yml@main
+    uses: ./.github/workflows/minimal-ci.yml
