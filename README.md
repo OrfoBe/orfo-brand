@@ -4,8 +4,8 @@ Repo **public** hébergeant les logos ORFO servis en ligne (notamment pour les
 signatures email, via le CDN jsDelivr).
 
 > Ce dépôt ne contient que des assets destinés à être publics. Le système de
-> génération des signatures et les fiches membres restent dans le repo privé
-> `OrfoBe/Synorfo` (`apps/email-signatures/`).
+> génération des signatures et les fiches membres restent dans le dépôt privé
+> `OrfoBe/orfo-web` (`email-signatures/`).
 
 ## Logos disponibles
 
@@ -24,7 +24,7 @@ signatures email, via le CDN jsDelivr).
 Noms volontairement génériques (pas de suffixe `-signature`) pour les quatre premiers : ces logos peuvent
 servir à autre chose que les signatures email. Les fichiers `*-signature.png` suivent la charte du
 2026-11-23 (logo ivoire dans un cadre noir aux coins ORFO) et ne servent qu'aux signatures ;
-ils sont générés par `apps/email-signatures/scripts/make-logo.js` du dépôt privé `Synorfo`.
+ils sont générés par `email-signatures/scripts/make-logo.js` du dépôt privé `orfo-web`.
 
 ⚠️ `orfo-studio-blanc.png` est **blanc sur transparent** : lisible uniquement sur
 fond sombre. Pour un fond clair, utiliser `orfo-studio-logo.png`.
