@@ -1,4 +1,4 @@
-# A copy of OrfoBe/orfo's .github/workflows/minimal-ci.yml, blob e9b464ea86945971fa0183719a3b6fc4d9dea0e1
+# A copy of OrfoBe/orfo's .github/workflows/minimal-ci.yml, blob 081dfd7e4b54420042d9c6e5bbc355d5d0ed6ec4
 # (git hash-object), identical below this header: a public repository cannot call a private one's
 # reusable workflow. orfo's CI fails when the two differ (tools/check_brand_copy.sh there). A change
 # opens its orfo pull request first; this copy takes that pull request's file and its blob hash and
@@ -51,13 +51,17 @@ on:
         description: Paths lychee skips, one regex per line
         type: string
         default: ""
+      runs-on:
+        description: "Where the job runs, as JSON: pick-runner.yml's answer, orfo-graph-01's runners or a hosted one"
+        type: string
+        default: '"ubuntu-24.04"'
 
 permissions:
   contents: read
 
 jobs:
   check:
-    runs-on: ubuntu-24.04
+    runs-on: ${{ fromJSON(inputs.runs-on) }}
     timeout-minutes: 10
     env:
       GITLEAKS_VERSION: 8.30.1
