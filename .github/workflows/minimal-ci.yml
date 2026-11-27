@@ -1,4 +1,4 @@
-# A copy of OrfoBe/orfo's .github/workflows/minimal-ci.yml, blob 081dfd7e4b54420042d9c6e5bbc355d5d0ed6ec4
+# A copy of OrfoBe/orfo's .github/workflows/minimal-ci.yml, blob 0deb4b1038243206ba4ea71f9dc3af184093da09
 # (git hash-object), identical below this header: a public repository cannot call a private one's
 # reusable workflow. orfo's CI fails when the two differ (tools/check_brand_copy.sh there). A change
 # opens its orfo pull request first; this copy takes that pull request's file and its blob hash and
@@ -8,8 +8,12 @@
 #
 # ORFO's minimal CI, written once and called by every repository (docs/conventions.md):
 # gitleaks, the entry file's cap, no archive folder, links, workflows, lint and tests. One job,
-# so one required check (`<caller job> / check`) and one billed minute. A caller passes its own
-# commands:
+# so one required check (`<caller job> / check`). A private repository's runs on orfo-graph-01, in
+# its fast lane, `graph01-check`: a runner of its own, which no shard takes, and the shards' runners
+# when one is free (Hugo, 2026-11-27: the CI on graph-01, no Actions minute). graph-01 down, the
+# check waits, and every merge with it; tools/runners/watch.py says so past 15 minutes. A public
+# repository's, which graph-01's runner group does not serve, runs hosted, at no charge. A caller
+# passes its own commands:
 #
 #   jobs:
 #     ci:
@@ -52,16 +56,16 @@ on:
         type: string
         default: ""
       runs-on:
-        description: "Where the job runs, as JSON: pick-runner.yml's answer, orfo-graph-01's runners or a hosted one"
+        description: "Where the job runs, as JSON; empty, orfo-graph-01's fast lane for a private repository, a hosted runner for a public one"
         type: string
-        default: '"ubuntu-24.04"'
+        default: ""
 
 permissions:
   contents: read
 
 jobs:
   check:
-    runs-on: ${{ fromJSON(inputs.runs-on) }}
+    runs-on: ${{ inputs.runs-on != '' && fromJSON(inputs.runs-on) || (github.event.repository.private && fromJSON('["self-hosted", "linux", "graph01-check"]') || 'ubuntu-24.04') }}
     timeout-minutes: 10
     env:
       GITLEAKS_VERSION: 8.30.1
